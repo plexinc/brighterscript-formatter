@@ -64,7 +64,8 @@ export class InteriorWhitespaceFormatter {
         let removeRight = [
             ...removeBoth,
             TokenKind.LeftSquareBracket,
-            TokenKind.LeftParen
+            TokenKind.LeftParen,
+            TokenKind.QuestionLeftParen
         ];
 
         let isPastFirstTokenOfLine = false;
@@ -153,7 +154,7 @@ export class InteriorWhitespaceFormatter {
             if (
                 addLeft.includes(token.kind) &&
                 //don't add left for negative sign preceeded by a square brace or paren
-                !(token.kind === TokenKind.Minus && previousTokenType && [TokenKind.LeftSquareBracket, TokenKind.LeftParen].includes(previousTokenType))
+                !(token.kind === TokenKind.Minus && previousTokenType && [TokenKind.LeftSquareBracket, TokenKind.LeftParen, TokenKind.QuestionLeftParen].includes(previousTokenType))
             ) {
                 //ensure a space token to the left
                 if (previousTokenType && previousTokenType !== TokenKind.Whitespace) {

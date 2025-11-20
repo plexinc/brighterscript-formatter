@@ -157,6 +157,7 @@ export let NumericLiteralTokenKinds = [
  * we can safely assume the minus sign is associated with a negative numeric literal
  */
 export let TokensBeforeNegativeNumericLiteral = [
+    TokenKind.QuestionLeftParen,
     TokenKind.Plus,
     TokenKind.Minus,
     TokenKind.Star,
