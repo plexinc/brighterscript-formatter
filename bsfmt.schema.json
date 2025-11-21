@@ -661,6 +661,11 @@
             "default": false,
             "description": "If true, empty curly braces will contain exactly 1 whitespace char (i.e. `{ }`). If false, there will be zero whitespace chars between empty curly braces (i.e. `{}`)"
         },
+        "insertSpaceAroundParameterAssignment": {
+            "type": "boolean",
+            "default": true,
+            "description": "If true, insert spaces around assignment operators in function parameters (i.e. `function main(a = true, b = false)` or `function(a = true, b = false)`). If false, assignments will be collapsed (i.e. `function main(a=true, b=false)` or `function(a=true, b=false)`)."
+        },
         "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": {
             "type": "boolean",
             "default": true,
