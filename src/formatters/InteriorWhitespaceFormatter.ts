@@ -211,6 +211,61 @@ export class InteriorWhitespaceFormatter {
         for (i; i < tokens.length; i++) {
             setIndex(i);
 
+            // Special handling for the interior of functions (spacing between function assignment operators)
+            // When insertSpaceAroundParameterAssignment is false, remove spaces around parameter assignment operators
+            if (options.insertSpaceAroundParameterAssignment === false && (token.kind === TokenKind.Sub || token.kind === TokenKind.Function)) {
+                const nextToken = util.getNextNonWhitespaceToken(tokens, i);
+                let parenToken: Token | undefined;
+
+                // Detect immediate '(' after keyword or function name
+                if (nextToken?.kind === TokenKind.LeftParen) {
+                    parenToken = nextToken;
+                } else if (nextToken?.kind === TokenKind.Identifier) {
+                    const afterNext = util.getNextNonWhitespaceToken(tokens, tokens.indexOf(nextToken));
+                    if (afterNext?.kind === TokenKind.LeftParen) {
+                        parenToken = afterNext;
+                    }
+                }
+
+                if (parenToken) {
+                    // Iterate tokens inside parentheses and trim whitespace around assignment operators
+                    // Track nested parentheses to find the correct closing paren
+                    let j = tokens.indexOf(parenToken) + 1;
+                    let parenDepth = 1;
+                    const indicesToRemove: number[] = [];
+                    while (j < tokens.length && parenDepth > 0) {
+                        const t = tokens[j];
+
+                        // Track nested parentheses
+                        if (t.kind === TokenKind.LeftParen || t.kind === TokenKind.QuestionLeftParen) {
+                            parenDepth++;
+                        } else if (t.kind === TokenKind.RightParen) {
+                            parenDepth--;
+                            if (parenDepth === 0) {
+                                break;
+                            }
+                        }
+
+                        if (t.kind === TokenKind.Equal) {
+                            // Remove left whitespace
+                            if (j > 0 && tokens[j - 1].kind === TokenKind.Whitespace) {
+                                indicesToRemove.push(j - 1);
+                            }
+                            // Remove right whitespace
+                            if (j + 1 < tokens.length && tokens[j + 1].kind === TokenKind.Whitespace) {
+                                indicesToRemove.push(j + 1);
+                            }
+                        }
+
+                        j++;
+                    }
+                    // Remove the tokens in reverse order to avoid index shifting issues
+                    for (const index of indicesToRemove.sort((a, b) => b - a)) {
+                        tokens.splice(index, 1);
+                    }
+                }
+            }
+
             //space to left of function parens?
             {
                 let parenToken: Token | undefined;

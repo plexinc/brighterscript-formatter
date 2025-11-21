@@ -56,6 +56,7 @@ export interface FormattingOptions {
      * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`).
      * This is a catchall property that will also disable the following rules:
      * - insertSpaceBeforeFunctionParenthesis
+     * - insertSpaceAroundParameterAssignment
      * - insertSpaceBetweenEmptyCurlyBraces
      * - insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces
      * - insertSpaceAfterConditionalCompileSymbol
@@ -74,6 +75,12 @@ export interface FormattingOptions {
      * @default false
      */
     insertSpaceBetweenEmptyCurlyBraces?: boolean;
+    /**
+     * If true, a space is inserted to the left of an opening function assignment parenthesis. (i.e. `function main(a = true, b = false)` or `function(a = true, b = false)`).
+     * If false, assignments will be collapsed (i.e. `function main(a=true, b=false)` or `function(a=true, b=false)`).
+     * @default true
+     */
+    insertSpaceAroundParameterAssignment?: boolean;
     /**
      * if true, conditional compile symbols will contain exactly 1 whitespace char (i.e. `# if true`)
      * if false, ensure there is no whitespace between the `#` and the keyword (i.e. `#if true`)
@@ -122,6 +129,7 @@ export function normalizeOptions(options: FormattingOptions) {
         keywordCaseOverride: {},
         formatInteriorWhitespace: true,
         insertSpaceBeforeFunctionParenthesis: false,
+        insertSpaceAroundParameterAssignment: true,
         insertSpaceBetweenEmptyCurlyBraces: false,
         insertSpaceAfterConditionalCompileSymbol: false,
         insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
