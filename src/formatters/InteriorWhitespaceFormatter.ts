@@ -88,6 +88,16 @@ export class InteriorWhitespaceFormatter {
                 continue;
             }
 
+            // Don't modify when a ] starts the line
+            if (token.kind === TokenKind.RightSquareBracket) {
+                const previousToken = util.getPreviousNonWhitespaceToken(tokens, i, true);
+                // If the previous non-whitespace token is a newline (or doesn't exist),
+                // this ] starts the line - skip all formatting for it
+                if (!previousToken || previousToken.kind === TokenKind.Newline) {
+                    continue;
+                }
+            }
+
             //normalize whitespace following conditional compile symbol #if, #else, #elseif, etc...
             if (ConditionalCompileTokenKinds.includes(token.kind)) {
                 if (options.insertSpaceAfterConditionalCompileSymbol) {
