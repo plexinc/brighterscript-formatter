@@ -31,7 +31,9 @@ export class MultiLineItemFormatter {
                 //there is extra stuff on this line that is not the end of the file
                 nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Eof &&
                 //is NOT array like `[[ ...\n ]]`, or `[{ ...\n }]`)
-                !this.isMatchingDoubleArrayOrArrayCurly(tokens, i)
+                !this.isMatchingDoubleArrayOrArrayCurly(tokens, i) &&
+                //Don't reformat if the opening bracket or curly is on the same line as 'return'
+                !this.isReturnArrayOrCurlyOnSameLine(tokens, i)
             ) {
                 tokens.splice(i + 1, 0, {
                     kind: TokenKind.Newline,
@@ -97,5 +99,35 @@ export class MultiLineItemFormatter {
                 return true;
             }
         }
+    }
+
+    /**
+     * Check if this is an array or object that starts on the same line as a 'return' statement
+     * We want to preserve: return [...] or return {...}
+     * Even if the contents span multiple lines
+     */
+    private isReturnArrayOrCurlyOnSameLine(tokens: Token[], currentIndex: number): boolean {
+        let token = tokens[currentIndex];
+        // Only check for arrays or objects
+        if (token.kind !== TokenKind.LeftSquareBracket && token.kind !== TokenKind.LeftCurlyBrace) {
+            return false;
+        }
+
+        // Look backwards to see if there's a 'return' on the same line
+        for (let i = currentIndex - 1; i >= 0; i--) {
+            let prevToken = tokens[i];
+
+            // If we hit a newline, there's no return on this line
+            if (prevToken.kind === TokenKind.Newline) {
+                return false;
+            }
+
+            // If we find 'return', this array is part of a return statement on the same line
+            if (prevToken.kind === TokenKind.Return) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
