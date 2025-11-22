@@ -453,7 +453,7 @@ export class InteriorWhitespaceFormatter {
             if (
                 nextToken &&
                 //next non-Whitespace token is an identifier
-                nextToken.kind === TokenKind.Identifier &&
+                (nextToken.kind === TokenKind.Identifier || nextToken.kind === TokenKind.ReplacementIdentifier) &&
                 previousToken &&
                 TokensBeforeNegativeNumericLiteral.includes(previousToken.kind)
             ) {
