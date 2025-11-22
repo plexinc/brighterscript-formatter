@@ -189,7 +189,8 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.While,
     TokenKind.Or,
     TokenKind.And,
-    TokenKind.Not
+    TokenKind.Not,
+    TokenKind.Newline
 ];
 
 export const TypeTokens = [
