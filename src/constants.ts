@@ -45,6 +45,7 @@ export const BasicKeywords = [
     TokenKind.Goto,
     TokenKind.Dim,
     TokenKind.Stop,
+    TokenKind.AtStop,
     TokenKind.Void,
     TokenKind.Boolean,
     TokenKind.Integer,
