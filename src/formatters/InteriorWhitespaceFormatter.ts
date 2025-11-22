@@ -82,6 +82,10 @@ export class InteriorWhitespaceFormatter {
             if (token.kind === TokenKind.Whitespace && isPastFirstTokenOfLine === false) {
                 continue;
             }
+            // skip past any replacement identifiers
+            if (token.kind === TokenKind.ReplacementIdentifier) {
+                continue;
+            }
 
             //normalize whitespace following conditional compile symbol #if, #else, #elseif, etc...
             if (ConditionalCompileTokenKinds.includes(token.kind)) {
