@@ -1,6 +1,10 @@
 import { expect } from 'chai';
 import { expectTokens, lex } from '../testHelpers.spec';
+import { undent } from 'undent';
 import { IndentFormatter } from './IndentFormatter';
+import { Lexer, Parser, ParseMode, TokenKind } from 'brighterscript';
+import { util } from '../util';
+import { normalizeOptions } from '../FormattingOptions';
 
 describe('IndentFormatter', () => {
     let formatter: IndentFormatter;
@@ -8,6 +12,18 @@ describe('IndentFormatter', () => {
     beforeEach(() => {
         formatter = new IndentFormatter();
     });
+
+    function format(text: string) {
+        const options = normalizeOptions({});
+        let { tokens } = Lexer.scan(text, { includeWhitespace: true });
+        const parser = Parser.parse(
+            tokens.filter(x => x.kind !== TokenKind.Whitespace),
+            { mode: ParseMode.BrighterScript }
+        );
+        util.dedupeWhitespace(tokens);
+        tokens = formatter.format(tokens, options, parser);
+        return tokens.map(x => x.text).join('');
+    }
 
     describe('ensureTokenIndentation', () => {
         it('does nothing for empty or invalid tokens', () => {
@@ -59,6 +75,16 @@ describe('IndentFormatter', () => {
                 formatter['ensureTokenIndentation'](lex(`speak()`), 3, '\t'),
                 ['\t\t\t', 'speak', '(', ')']
             );
+        });
+
+        it('handles single-line if with @stop inside #if block', () => {
+            const input = undent`
+                #if DEBUG
+                    ' When a colorsUrl is provided, there should always be a valid colorsUrlOriginId
+                    if data.blur.colorsUrl <> invalid and IsInvalidOrEmpty(data.blur.colorsUrlOriginId) then @stop
+                #end if
+            `;
+            expect(format(input)).to.equal(input);
         });
     });
 
