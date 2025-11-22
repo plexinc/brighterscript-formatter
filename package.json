@@ -23,7 +23,7 @@
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.70.3",
+        "brighterscript": "https://github.com/plexinc/brighterscript.git#0.70.202511253",
         "glob-all": "^3.3.0",
         "jsonc-parser": "^3.0.0",
         "source-map": "^0.7.3",
