@@ -103,4 +103,64 @@ describe('IndentFormatter', () => {
             );
         });
     });
+
+    it('handles array indentation in else if block', () => {
+        const input = undent`
+            sub test()
+                if true then
+                    print "true"
+                else if ArrayContains([
+                        "addToWatchlist",
+                        "removeFromWatchlist",
+                        "removeFromContinueWatching",
+                        "markAsWatched",
+                        "markAsUnwatched"
+                    ], action.id) then
+                    Metrics().ReportEvent(action.metrics?.click)
+                end if
+            end sub
+        `;
+
+        const expected = [
+            'sub test()',
+            '    if true then',
+            '        print "true"',
+            '    else if ArrayContains([',
+            '        "addToWatchlist",',
+            '        "removeFromWatchlist",',
+            '        "removeFromContinueWatching",',
+            '        "markAsWatched",',
+            '        "markAsUnwatched"',
+            '    ], action.id) then',
+            '        Metrics().ReportEvent(action.metrics?.click)',
+            '    end if',
+            'end sub'
+        ].join('\n');
+
+        const actual = format(input);
+        expect(actual).to.equal(expected);
+    });
+
+    it('handles object literal indentation after array access', () => {
+        const input = undent`
+            sub test()
+                m["mainGroupCurrentBasePosition"] = {
+                    "x": 0,
+                    "y": 0
+                }
+            end sub
+        `;
+
+        const expected = [
+            'sub test()',
+            '    m["mainGroupCurrentBasePosition"] = {',
+            '        "x": 0,',
+            '        "y": 0',
+            '    }',
+            'end sub'
+        ].join('\n');
+
+        const actual = format(input);
+        expect(actual).to.equal(expected);
+    });
 });
