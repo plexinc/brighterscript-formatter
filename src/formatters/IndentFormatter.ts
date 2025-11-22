@@ -5,6 +5,17 @@ import { OutdentSpacerTokenKinds, IndentSpacerTokenKinds, CallableKeywordTokenKi
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
+interface IndentState {
+    kind: TokenKind;
+    causedIndent: boolean;
+}
+
+const StructureIndentTokenKinds = [
+    TokenKind.LeftSquareBracket,
+    TokenKind.LeftCurlyBrace,
+    TokenKind.QuestionLeftSquare
+];
+
 export class IndentFormatter {
     /**
      * Handle indentation for an array of tokens
@@ -19,7 +30,7 @@ export class IndentFormatter {
         //get a map of all if statements for easier lookups
         const ifStatements = this.getAllIfStatements(parser);
 
-        let parentIndentTokenKinds: TokenKind[] = [];
+        let parentIndentTokenKinds: IndentState[] = [];
 
         //the list of output tokens
         let result: Token[] = [];
@@ -50,16 +61,21 @@ export class IndentFormatter {
         lineTokens: Token[],
         tokens: Token[],
         ifStatements: Map<Token, IfStatement>,
-        parentIndentTokenKinds: TokenKind[]
+        parentIndentTokenKinds: IndentState[]
     ): { currentLineOffset: number; nextLineOffset: number } {
         const getParentIndentTokenKind = () => {
-            const parentIndentTokenKind = parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
+            const parentIndentTokenKind = parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1].kind : undefined;
             return parentIndentTokenKind;
         };
 
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
+        // Track the number of open indentors created on this line.
+        // This is used to determine if we should suppress indentation for structure indentors (like `[` or `{`).
+        // We only suppress if there is an *active* indentor on this line (e.g. `if ArrayContains([`).
+        // If an indentor was closed (e.g. `m["key"] = {`), we should NOT suppress.
+        let activeIndentorsOnThisLine = 0;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -73,6 +89,10 @@ export class IndentFormatter {
 
             //if the previous token was `else` and this token is `if`, skip this token. (we used to have a single token for `elseif` but it got split out in an update of brighterscript)
             if (previousNonWhitespaceToken?.kind === TokenKind.Else && token.kind === TokenKind.If) {
+                foundIndentorThisLine = true;
+                // `else if` implies an indentor (the `if` condition), even though the `If` token is skipped.
+                // So we treat it as an active indentor for the purpose of suppression.
+                activeIndentorsOnThisLine++;
                 continue;
             }
 
@@ -113,7 +133,7 @@ export class IndentFormatter {
 
                 // check for specifically mentioned tokens to NOT indent
                 const parentIndentTokenKind = getParentIndentTokenKind();
-                const parentIndentTokenKindsContainsSubOrFunction = parentIndentTokenKinds.includes(TokenKind.Sub) || parentIndentTokenKinds.includes(TokenKind.Function);
+                const parentIndentTokenKindsContainsSubOrFunction = parentIndentTokenKinds.some(x => x.kind === TokenKind.Sub || x.kind === TokenKind.Function);
 
                 const tokenKindIsClass = token.kind === TokenKind.Class;
                 const tokenKindIsEnum = token.kind === TokenKind.Enum;
@@ -135,9 +155,20 @@ export class IndentFormatter {
                     continue;
                 }
 
-                nextLineOffset++;
+                // Don't indent if this is a structure indentor (like `[` or `{`) and we've already found an indentor on this line.
+                // This prevents double indentation for things like `if ArrayContains([` or `[[`
+                let causedIndent = true;
+                if (activeIndentorsOnThisLine > 0 && StructureIndentTokenKinds.includes(token.kind)) {
+                    causedIndent = false;
+                }
+
+                if (causedIndent) {
+                    nextLineOffset++;
+                    activeIndentorsOnThisLine++;
+                }
+
                 foundIndentorThisLine = true;
-                parentIndentTokenKinds.push(token.kind);
+                parentIndentTokenKinds.push({ kind: token.kind, causedIndent: causedIndent });
 
                 //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
                 if (
@@ -167,11 +198,17 @@ export class IndentFormatter {
                     continue;
                 }
 
-                nextLineOffset--;
+                const popped = parentIndentTokenKinds.pop();
+                if (popped?.causedIndent) {
+                    nextLineOffset--;
+                    activeIndentorsOnThisLine--;
+                    if (activeIndentorsOnThisLine < 0) {
+                        activeIndentorsOnThisLine = 0;
+                    }
+                }
                 if (foundIndentorThisLine === false) {
                     currentLineOffset--;
                 }
-                parentIndentTokenKinds.pop();
 
                 //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
                 if (
