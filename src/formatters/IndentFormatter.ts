@@ -23,6 +23,7 @@ export class IndentFormatter {
 
         this.multiLineFuncDeclarationOpeners = [];
         this.collapsedGroupClosers = new Set<Token>();
+        this.blockSharedGroupClosers = new Set<Token>();
         //the list of output tokens
         let result: Token[] = [];
 
@@ -56,6 +57,13 @@ export class IndentFormatter {
      */
     private collapsedGroupClosers = new Set<Token>();
 
+    /**
+     * Closers belonging to bracket groups that opened after a block keyword on the same line, so they share the block's
+     * indent level instead of adding one (e.g. the `]` and `)` in `if ArrayContains([` ... `], x) then`). The close side
+     * removes no level, since the block's own terminator does that, but still aligns a line that starts with one.
+     */
+    private blockSharedGroupClosers = new Set<Token>();
+
     private processLine(
         lineTokens: Token[],
         tokens: Token[],
@@ -70,6 +78,9 @@ export class IndentFormatter {
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let firstNonWhitespaceToken: Token | null = null;
+        //a block keyword on this line (`if`, `else if`, `for each`, `while`, ...) already indents what follows it, so a
+        //bracket group that opens after it on the same line and spans lines must not add a second level
+        let blockIndentedThisLine = false;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -86,6 +97,7 @@ export class IndentFormatter {
 
             //if the previous token was `else` and this token is `if`, skip this token. (we used to have a single token for `elseif` but it got split out in an update of brighterscript)
             if (previousNonWhitespaceToken?.kind === TokenKind.Else && token.kind === TokenKind.If) {
+                blockIndentedThisLine = true;
                 continue;
             }
 
@@ -163,13 +175,25 @@ export class IndentFormatter {
 
                 const isOpenFunctionDeclarationParamList = this.isStartOfOpenFunctionDeclarationParamList(lineTokens, i);
 
+                //after a block keyword on this line, a multi-line bracket group shares the block's level (e.g. the `(` and
+                //`[` in `else if ArrayContains([` ... `], x) then`). Record its own closer so the close side skips the matching
+                //un-indent. Each such group records its own closer, so nested groups stay balanced too.
+                if (blockIndentedThisLine && !isOpenFunctionDeclarationParamList && IndentGroupingTokenKinds.includes(token.kind)) {
+                    const ownCloser = this.getMatchingClosingTokens(tokens, [token], tokens.indexOf(token))[0];
+                    if (ownCloser && ownCloser.range.start.line !== token.range.start.line) {
+                        this.blockSharedGroupClosers.add(ownCloser);
+                        continue;
+                    }
+                }
+
                 //collapse multiple bracket groups that open on the same line into a single indent level: only the first
                 //unclosed opener on a line adds a level; a later opener whose enclosing group opened on the same line is
                 //collapsed into it (e.g. the `{` in `foo(arg, {` ... `})`, or `[{` ... `}]`). We record the enclosing
                 //group's closer so the close side skips its matching un-indent, keeping opens and closes balanced.
                 if (!isOpenFunctionDeclarationParamList) {
                     const enclosingCloser = this.getCollapsibleEnclosingCloser(tokens, tokens.indexOf(token));
-                    if (enclosingCloser) {
+                    //a group sharing a block keyword's level added none, so there is no level to collapse into
+                    if (enclosingCloser && !this.blockSharedGroupClosers.has(enclosingCloser)) {
                         this.collapsedGroupClosers.add(enclosingCloser);
                         continue;
                     }
@@ -179,6 +203,13 @@ export class IndentFormatter {
                     this.multiLineFuncDeclarationOpeners.push(token);
                 } else {
                     nextLineOffset++;
+                    //only a block that stays open past this line shares its level (not an inline `sub() : end sub`)
+                    if (!IndentGroupingTokenKinds.includes(token.kind)) {
+                        const blockCloser = this.getMatchingClosingTokens(tokens, [token], tokens.indexOf(token))[0];
+                        if (!blockCloser || blockCloser.range.start.line !== token.range.start.line) {
+                            blockIndentedThisLine = true;
+                        }
+                    }
                 }
                 parentIndentTokenKinds.push(token.kind);
 
@@ -204,6 +235,16 @@ export class IndentFormatter {
                 //on the same line). The matching opener didn't add a level, so this closer must not remove one.
                 if (this.collapsedGroupClosers.has(token)) {
                     this.collapsedGroupClosers.delete(token);
+                    continue;
+                }
+
+                //a closer whose group shared a block keyword's level removes no level, but a line starting with it still
+                //aligns with the block keyword's line (e.g. `], x) then`)
+                if (this.blockSharedGroupClosers.has(token)) {
+                    this.blockSharedGroupClosers.delete(token);
+                    if (token === firstNonWhitespaceToken) {
+                        currentLineOffset--;
+                    }
                     continue;
                 }
 
