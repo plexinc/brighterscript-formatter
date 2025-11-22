@@ -207,7 +207,26 @@ export class IndentFormatter {
                     }
                 }
                 if (foundIndentorThisLine === false) {
-                    currentLineOffset--;
+                    let shouldDecrement = true;
+                    //if this didn't cause an indent, and there is another outdenter on this line,
+                    //then we shouldn't outdent the current line because the next outdenter will handle it
+                    if (!popped?.causedIndent) {
+                        for (let j = i + 1; j < lineTokens.length; j++) {
+                            let nextTok = lineTokens[j];
+                            if (nextTok.kind === TokenKind.Whitespace) {
+                                continue;
+                            }
+                            let nextNextTok = util.getNextNonWhitespaceToken(lineTokens, j);
+                            if (this.isOutdentToken(nextTok, nextNextTok)) {
+                                shouldDecrement = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (shouldDecrement) {
+                        currentLineOffset--;
+                    }
                 }
 
                 //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
