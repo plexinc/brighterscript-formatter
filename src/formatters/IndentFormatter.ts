@@ -206,6 +206,7 @@ export class IndentFormatter {
                         activeIndentorsOnThisLine = 0;
                     }
                 }
+
                 if (foundIndentorThisLine === false) {
                     let shouldDecrement = true;
                     //if this didn't cause an indent, and there is another outdenter on this line,
@@ -400,11 +401,24 @@ export class IndentFormatter {
             (
                 //is not a letter
                 isSymbol ||
-                //is not a symbol and is not being used as a key in an AA literal
-                (
-                    !isSymbol &&
-                    nextNonWhitespaceToken.kind !== TokenKind.Colon
-                )
+                    //is not a symbol and is not being used as a key in an AA literal
+                    (
+                        !isSymbol &&
+                        (
+                            nextNonWhitespaceToken.kind !== TokenKind.Colon ||
+                            //allow these tokens to be followed by a colon (because they are valid statement separators)
+                            [
+                                TokenKind.EndIf,
+                                TokenKind.EndFor,
+                                TokenKind.EndWhile,
+                                TokenKind.EndSub,
+                                TokenKind.EndFunction,
+                                TokenKind.EndTry,
+                                TokenKind.EndClass,
+                                TokenKind.EndNamespace
+                            ].includes(token.kind)
+                        )
+                    )
             ) &&
             //is not a method call
             !(
