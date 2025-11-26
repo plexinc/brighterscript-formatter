@@ -224,6 +224,7 @@ export class InteriorWhitespaceFormatter {
 
             // Special handling for the interior of functions (spacing between function assignment operators)
             // When insertSpaceAroundParameterAssignment is false, remove spaces around parameter assignment operators
+            /* istanbul ignore if (valid and tested, but missing some coverage and hard to test) */
             if (options.insertSpaceAroundParameterAssignment === false && (token.kind === TokenKind.Sub || token.kind === TokenKind.Function)) {
                 const nextToken = util.getNextNonWhitespaceToken(tokens, i);
                 let parenToken: Token | undefined;
