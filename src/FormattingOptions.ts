@@ -48,7 +48,7 @@ export interface FormattingOptions {
     keywordCaseOverride?: Record<string, FormattingOptions['keywordCase']>;
     /**
      * Provides a way to override type keyword case at the individual TokenType level.
-     * Types are defined as keywords that are preceeded by an `as` token.
+     * Types are defined as keywords that are preceded by an `as` token.
      */
     typeCaseOverride?: Record<string, FormattingOptions['keywordCase']>;
     /**
@@ -101,8 +101,8 @@ export interface FormattingOptions {
     insertSpaceBetweenAssociativeArrayLiteralKeyAndColon?: boolean;
     /**
      * Forces all single-line comments to use the same style.
-     * If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default.
-     * If 'rem', all comments are preceeded by `rem`
+     * If 'singlequote' or falsey, all comments are preceded by a single quote. This is the default.
+     * If 'rem', all comments are preceded by `rem`
      * If 'original', the comment type is unchanged
      * @default "original"
      */

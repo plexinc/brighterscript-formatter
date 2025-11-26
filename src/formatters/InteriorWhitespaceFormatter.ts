@@ -83,7 +83,7 @@ export class InteriorWhitespaceFormatter {
             if (token.kind === TokenKind.Whitespace && isPastFirstTokenOfLine === false) {
                 continue;
             }
-            // skip past any replacement identifiers
+            // skip replacement identifiers during whitespace formatting
             if (token.kind === TokenKind.ReplacementIdentifier) {
                 continue;
             }
@@ -163,7 +163,7 @@ export class InteriorWhitespaceFormatter {
             //pad any of these tokens with a space to the left
             if (
                 addLeft.includes(token.kind) &&
-                //don't add left for negative sign preceeded by a square brace or paren
+                //don't add left for negative sign preceded by a square brace or paren
                 !(token.kind === TokenKind.Minus && previousTokenType && [TokenKind.LeftSquareBracket, TokenKind.LeftParen, TokenKind.QuestionLeftParen].includes(previousTokenType))
             ) {
                 //ensure a space token to the left

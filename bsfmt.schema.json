@@ -543,7 +543,7 @@
         },
         "typeCaseOverride": {
             "type": "object",
-            "description": " Provides a way to override type keyword case at the individual TokenType level. Types are defined as keywords that are preceeded by an `as` token.",
+            "description": " Provides a way to override type keyword case at the individual TokenType level. Types are defined as keywords that are preceded by an `as` token.",
             "properties": {
                 "boolean": {
                     "type": "string",
