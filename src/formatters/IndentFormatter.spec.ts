@@ -80,11 +80,17 @@ describe('IndentFormatter', () => {
         it('handles single-line if with @stop inside #if block', () => {
             const input = undent`
                 #if DEBUG
+                            ' When a colorsUrl is provided, there should always be a valid colorsUrlOriginId
+                        if data.blur.colorsUrl <> invalid and IsInvalidOrEmpty(data.blur.colorsUrlOriginId) then @stop
+                   #end if
+            `;
+            const expected = undent`
+                #if DEBUG
                     ' When a colorsUrl is provided, there should always be a valid colorsUrlOriginId
                     if data.blur.colorsUrl <> invalid and IsInvalidOrEmpty(data.blur.colorsUrlOriginId) then @stop
                 #end if
             `;
-            expect(format(input)).to.equal(input);
+            expect(format(input)).to.equal(expected);
         });
     });
 
@@ -107,42 +113,47 @@ describe('IndentFormatter', () => {
     it('handles array indentation in else if block', () => {
         const input = undent`
             sub test()
-                if true then
+                    if true then
                     print "true"
-                else if ArrayContains([
+            else if ArrayContains([
                         "addToWatchlist",
                         "removeFromWatchlist",
                         "removeFromContinueWatching",
                         "markAsWatched",
                         "markAsUnwatched"
                     ], action.id) then
+                Metrics().ReportEvent(action.metrics?.click)
+                  end if
+               end sub
+        `;
+        const expected = undent`
+            sub test()
+                if true then
+                    print "true"
+                else if ArrayContains([
+                    "addToWatchlist",
+                    "removeFromWatchlist",
+                    "removeFromContinueWatching",
+                    "markAsWatched",
+                    "markAsUnwatched"
+                ], action.id) then
                     Metrics().ReportEvent(action.metrics?.click)
                 end if
             end sub
         `;
-
-        const expected = [
-            'sub test()',
-            '    if true then',
-            '        print "true"',
-            '    else if ArrayContains([',
-            '        "addToWatchlist",',
-            '        "removeFromWatchlist",',
-            '        "removeFromContinueWatching",',
-            '        "markAsWatched",',
-            '        "markAsUnwatched"',
-            '    ], action.id) then',
-            '        Metrics().ReportEvent(action.metrics?.click)',
-            '    end if',
-            'end sub'
-        ].join('\n');
-
-        const actual = format(input);
-        expect(actual).to.equal(expected);
+        expect(format(input)).to.equal(expected);
     });
 
     it('handles object literal indentation after array access', () => {
         const input = undent`
+            sub test()
+                  m["mainGroupCurrentBasePosition"] = {
+                        "x": 0,
+                    "y": 0
+                }
+            end sub
+        `;
+        const expected = undent`
             sub test()
                 m["mainGroupCurrentBasePosition"] = {
                     "x": 0,
@@ -150,22 +161,24 @@ describe('IndentFormatter', () => {
                 }
             end sub
         `;
-
-        const expected = [
-            'sub test()',
-            '    m["mainGroupCurrentBasePosition"] = {',
-            '        "x": 0,',
-            '        "y": 0',
-            '    }',
-            'end sub'
-        ].join('\n');
-
-        const actual = format(input);
-        expect(actual).to.equal(expected);
+        expect(format(input)).to.equal(expected);
     });
 
     it('handles indentation for })] with function call', () => {
         const input = undent`
+            function GetOverflowActionFromMetadata(metadata as object) as object
+                  if metadata._container.isLiveTV = true or metadata.type = "collection" then return []
+
+                   return [API().CreateAction("pmsOverflow", "overflow-horizontal-alt", ltr("More"), {
+                    "data": {
+                           "originId": metadata._container._originId,
+                        "ratingKey": metadata["ratingKey"],
+                        "key": metadata["key"].Replace("/children", ""),
+                    },
+                })]
+            end function
+        `;
+        const expected = undent`
             function GetOverflowActionFromMetadata(metadata as object) as object
                 if metadata._container.isLiveTV = true or metadata.type = "collection" then return []
 
@@ -178,25 +191,20 @@ describe('IndentFormatter', () => {
                 })]
             end function
         `;
-        const expected = [
-            'function GetOverflowActionFromMetadata(metadata as object) as object',
-            '    if metadata._container.isLiveTV = true or metadata.type = "collection" then return []',
-            '',
-            '    return [API().CreateAction("pmsOverflow", "overflow-horizontal-alt", ltr("More"), {',
-            '        "data": {',
-            '            "originId": metadata._container._originId,',
-            '            "ratingKey": metadata["ratingKey"],',
-            '            "key": metadata["key"].Replace("/children", ""),',
-            '        },',
-            '    })]',
-            'end function'
-        ].join('\n');
-        const actual = format(input);
-        expect(actual).to.equal(expected);
+        expect(format(input)).to.equal(expected);
     });
 
     it('prevents double indentation when closing and opening indentors on the same line', () => {
         const input = undent`
+            sub test()
+                a = {
+                       x: 1
+                  } : b = {
+                       y: 2
+                  }
+            end sub
+        `;
+        const expected = undent`
             sub test()
                 a = {
                     x: 1
@@ -205,16 +213,104 @@ describe('IndentFormatter', () => {
                 }
             end sub
         `;
-        const expected = [
-            'sub test()',
-            '    a = {',
-            '        x: 1',
-            '    } : b = {',
-            '        y: 2',
-            '    }',
-            'end sub'
-        ].join('\n');
-        const actual = format(input);
-        expect(actual).to.equal(expected);
+        expect(format(input)).to.equal(expected);
+    });
+
+    it('handles continue for loop', () => {
+        const input = undent`
+            sub main()
+                    for i = 0 to 10
+                    if true then continue for
+                  end for
+              end sub
+        `;
+        const expected = undent`
+            sub main()
+                for i = 0 to 10
+                    if true then continue for
+                end for
+            end sub
+        `;
+        expect(format(input)).to.equal(expected);
+    });
+
+    it('handles continue while loop', () => {
+        const input = undent`
+            sub main()
+                   while true
+                        if true then continue while
+            end while
+            end sub
+        `;
+        const expected = undent`
+            sub main()
+                while true
+                    if true then continue while
+                end while
+            end sub
+        `;
+        expect(format(input)).to.equal(expected);
+    });
+
+    it('handles double un-indent with nested arrays on same line', () => {
+        const input = undent`
+            sub main()
+            a = [[
+                        1
+                   ]]
+            end sub
+        `;
+        const expected = undent`
+            sub main()
+                a = [[
+                    1
+                ]]
+            end sub
+        `;
+        expect(format(input)).to.equal(expected);
+    });
+
+    it('handles double un-indent with nested objects on same line', () => {
+        const input = undent`
+            sub main()
+            a = [{
+                         k: 1
+                   }]
+            end sub
+        `;
+        const expected = undent`
+            sub main()
+                a = [{
+                    k: 1
+                }]
+            end sub
+        `;
+        expect(format(input)).to.equal(expected);
+    });
+
+    it('handles EOF after outdent token', () => {
+        const input = undent`
+            sub main()
+               end sub`;
+        const expected = undent`
+            sub main()
+            end sub`;
+        expect(format(input)).to.equal(expected);
+    });
+
+    it('handles next followed by colon', () => {
+        const input = undent`
+            sub main()
+                for i = 0 to 1
+                   next : print "done"
+            end sub
+        `;
+        const expected = undent`
+            sub main()
+                for i = 0 to 1
+                next : print "done"
+            end sub
+        `;
+        expect(format(input)).to.equal(expected);
     });
 });
