@@ -415,7 +415,10 @@ export class IndentFormatter {
                                 TokenKind.EndFunction,
                                 TokenKind.EndTry,
                                 TokenKind.EndClass,
-                                TokenKind.EndNamespace
+                                TokenKind.EndNamespace,
+                                TokenKind.Next,
+                                TokenKind.EndInterface,
+                                TokenKind.EndEnum
                             ].includes(token.kind)
                         )
                     )
