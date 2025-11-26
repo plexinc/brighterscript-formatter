@@ -16,7 +16,7 @@ export class KeywordCaseFormatter {
                 let keywordCase: FormattingOptions['keywordCase'];
                 let lowerKind = token.kind.toLowerCase();
 
-                //a token is a type if it's preceeded by an `as` token
+                //a token is a type if it's preceded by an `as` token
                 if (this.isType(tokens, token)) {
                     //options.typeCase is always set to options.keywordCase when not provided
                     keywordCase = options.typeCase;
@@ -85,7 +85,7 @@ export class KeywordCaseFormatter {
     }
 
     /**
-     * Determine if the token is a type keyword (meaing preceeded by `as` token)
+     * Determine if the token is a type keyword (meaning preceded by `as` token)
      * @param token
      */
     public isType(tokens: Token[], token: Token) {

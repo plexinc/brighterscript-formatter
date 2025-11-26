@@ -102,7 +102,7 @@ export class IndentFormatter {
                 //is not being used as a key in an AA literal
                 nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon
             ) {
-                //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
+                //skip indent for 'function'|'sub' used as type (preceded by `as` keyword)
                 if (
                     CallableKeywordTokenKinds.includes(token.kind) &&
                     //the previous token will be Whitespace, so verify that previousPrevious is 'as'
@@ -190,7 +190,7 @@ export class IndentFormatter {
                     }
                 }
             } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
-                //do not un-indent if this is a `next` or `endclass` token preceeded by a period
+                //do not un-indent if this is a `next` or `endclass` token preceded by a period
                 if (
                     [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace, TokenKind.Catch, TokenKind.EndTry].includes(token.kind) &&
                     previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
