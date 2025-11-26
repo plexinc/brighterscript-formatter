@@ -109,6 +109,7 @@ export class MultiLineItemFormatter {
     private isReturnArrayOrCurlyOnSameLine(tokens: Token[], currentIndex: number): boolean {
         let token = tokens[currentIndex];
         // Only check for arrays or objects
+        /* istanbul ignore if (should not happen, defensive programming) */
         if (token.kind !== TokenKind.LeftSquareBracket && token.kind !== TokenKind.LeftCurlyBrace) {
             return false;
         }
