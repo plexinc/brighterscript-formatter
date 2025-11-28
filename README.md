@@ -68,7 +68,7 @@ bsfmt "source/**/*.brs" "!**/roku_modules/*.*"
 | noBsfmt |`boolean` | `false`   | Don't read a bsfmt.json file |
 | bsfmtPath |`string` | `undefined`   | Use a specified path to bsfmt.json instead of the default |
 ||||
-All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are supported as well. Complex options such as `keywordCaseOverride` or `typeCaseOverride` are not currently supported via the CLI and should be provided in the `bsfmt.json` or through the node API. Feel free to [open an issue](https://github.com/rokucommunity/brighterscript-formatter/issues/new) if you would like to see support for these options via the CLI.
+All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are supported as well. Complex options such as `keywordCaseOverride`, `typeCaseOverride`, `specificKeywordCaseOverride`, or `specificTypeCaseOverride` are not currently supported via the CLI and should be provided in the `bsfmt.json` or through the node API. Feel free to [open an issue](https://github.com/rokucommunity/brighterscript-formatter/issues/new) if you would like to see support for these options via the CLI.
 
 
 
@@ -83,7 +83,9 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |compositeKeywords| `"split", "combine", "original"`| `"split"` | Forces all composite keywords (i.e. `elseif`, `endwhile`, etc...) to be consistent. If `"split"`, they are split into their alternatives (`else if`, `end while`). If `"combine"`', they are combined (`elseif`, `endwhile`). If `"original"` or falsey, they are not modified. |
 |removeTrailingWhiteSpace|`boolean`|`true`| Remove (or don't remove) trailing whitespace at the end of each line |
 |[keywordCaseOverride](#keywordCaseOverride)| `object`| `undefined`| Provides a way to override keyword case at the individual TokenType level|
-|[typeCaseOverride](#typeCaseOverride)|`object`|`undefined`| Provides a way to override type keyword case at the individual TokenType level.Types are defined as keywords that are preceded by an `as` token.|
+|[typeCaseOverride](#typeCaseOverride)|`object`|`undefined`| Provides a way to override type keyword case at the individual TokenType level. Types are defined as keywords that are preceded by an `as` token.|
+|[specificKeywordCaseOverride](#specificKeywordCaseOverride)| `object`| `undefined`| Provides a way to override keyword case with a specific string at the individual keyword level|
+|[specificTypeCaseOverride](#specificTypeCaseOverride)|`object`|`undefined`| Provides a way to override type keyword case with a specific string at the individual keyword level. Types are defined as keywords that are preceded by an `as` token. This accepts specific casing strings rather than case options like "upper" or "lower".|
 |formatInteriorWhitespace|`boolean`|`true`| All whitespace between items is reduced to exactly 1 space character and certain keywords and operators are padded with whitespace.  This is a catchall property that will also disable the following rules: `insertSpaceBeforeFunctionParenthesis`, `insertSpaceBetweenEmptyCurlyBraces`, `insertSpaceAroundParameterAssignment`, `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`|
 |insertSpaceBeforeFunctionParenthesis|`boolean`|`false`| If true, a space is inserted to the left of an opening function declaration parenthesis. (i.e. `function main ()` or `function ()`). If false, all spacing is removed (i.e. `function main()` or `function()`).|
 |insertSpaceBetweenEmptyCurlyBraces|`boolean`|`false`| If true, empty curly braces will contain exactly 1 whitespace char (i.e. `{ }`). If false, there will be zero whitespace chars between empty curly braces (i.e. `{}`) |
@@ -123,6 +125,33 @@ For more flexibility in how to format the case of types, you can specify the cas
         "string": "upper",
         "boolean": "upper"
     },
+}
+```
+
+A type is any token found directly after an `as` keyword.
+
+### specificKeywordCaseOverride
+For more flexibility in how to format the case of keywords, you can specify the case value preference for each individual keyword. Here's an example:
+
+```js
+{
+    "specificKeywordCaseOverride": {
+        "longinteger": "longInteger",
+        "endif": "EndIF"
+    }
+}
+```
+
+The full list of keywords detected by this option can be found [here](https://github.com/rokucommunity/brighterscript-formatter/blob/095f9dc5ec418d46d3ea6197712f5d11f71d922f/src/Formatter.ts#L1145).
+
+### specificTypeCaseOverride
+For more flexibility in how to format the case of types, you can specify the case value preference for each individual type. Here's an example:
+
+```js
+{
+    "specificTypeCaseOverride": {
+        "longinteger": "LongInteger"
+    }
 }
 ```
 
