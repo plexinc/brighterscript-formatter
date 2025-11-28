@@ -12,20 +12,37 @@ export class KeywordCaseFormatter {
 
             //if this token is a keyword
             if (Keywords.includes(token.kind)) {
-
                 let keywordCase: FormattingOptions['keywordCase'];
                 let lowerKind = token.kind.toLowerCase();
 
                 //a token is a type if it's preceded by an `as` token
                 if (this.isType(tokens, token)) {
+
+                    //if the token is a type, check for a specific override
+                    const specificTypeCaseOverride = options.specificTypeCaseOverride?.[lowerKind];
+                    if (specificTypeCaseOverride && specificTypeCaseOverride.toLowerCase() === lowerKind) {
+                        token.text = specificTypeCaseOverride;
+                        continue;
+                    }
+
                     //options.typeCase is always set to options.keywordCase when not provided
                     keywordCase = options.typeCase;
+
                     //if this is an overridden type keyword, use that override instead
                     if (options.typeCaseOverride && options.typeCaseOverride[lowerKind] !== undefined) {
                         keywordCase = options.typeCaseOverride[lowerKind];
                     }
                 } else {
+                    //if the token is a keyword, check for a specific override
+                    const specificKeywordCaseOverride = options.specificKeywordCaseOverride?.[lowerKind];
+                    if (specificKeywordCaseOverride && specificKeywordCaseOverride.toLowerCase() === lowerKind) {
+                        token.text = specificKeywordCaseOverride;
+                        continue;
+                    }
+
+                    //keywordCase is always set to options.keywordCase when not provided
                     keywordCase = options.keywordCase;
+
                     //if this is an overridable keyword, use that override instead
                     if (options.keywordCaseOverride && options.keywordCaseOverride[lowerKind] !== undefined) {
                         keywordCase = options.keywordCaseOverride[lowerKind];

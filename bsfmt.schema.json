@@ -58,9 +58,17 @@
             "default": true,
             "description": "Removes all trailing whitespace at the end of each line."
         },
+        "specificKeywordCaseOverride": {
+            "type": "object",
+            "description": "Allows overriding specific keywords at the individual keyword level.\nExample {\"longinteger\": \"LongInteger\"} would make longinteger LongInteger"
+        },
+        "specificTypeCaseOverride": {
+            "type": "object",
+            "description": "Allows overriding specific types at the individual type level.\nExample {\"longinteger\": \"longInteger\"} would make longinteger longInteger"
+        },
         "keywordCaseOverride": {
             "type": "object",
-            "description": "Allows overriding case at the individual keyword level.\nExample {\"string\": \"title\"} would make string always lower case regardless of keywordCase",
+            "description": "Allows overriding case at the individual keyword level.\nExample {\"string\": \"title\"} would make string always title case regardless of keywordCase",
             "properties": {
                 "endfunction": {
                     "type": "string",

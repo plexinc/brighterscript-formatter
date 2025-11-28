@@ -52,6 +52,18 @@ export interface FormattingOptions {
      */
     typeCaseOverride?: Record<string, FormattingOptions['keywordCase']>;
     /**
+     * Provides a way to override keyword case with a specific string.
+     * The key should be the lowercased keyword, and the value should be the desired casing.
+     * e.g. { "longinteger": "LongInteger" }
+     */
+    specificKeywordCaseOverride?: Record<string, string>;
+    /**
+     * Provides a way to override type keyword case with a specific string.
+     * The key should be the lowercased keyword, and the value should be the desired casing.
+     * e.g. { "longinteger": "LongInteger" }
+     */
+    specificTypeCaseOverride?: Record<string, string>;
+    /**
      * If true (the default), all whitespace between items are reduced to exactly 1 space character,
      * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`).
      * This is a catchall property that will also disable the following rules:
