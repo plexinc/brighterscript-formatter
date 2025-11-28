@@ -7,7 +7,7 @@ import { util } from '../util';
 import { InteriorWhitespaceFormatter } from './InteriorWhitespaceFormatter';
 import type { FormattingOptions } from '../FormattingOptions';
 
-describe('insertSpaceAroundParameterAssignment', () => {
+describe('interiorWhitespaceFormatter', () => {
     let interiorWhitespaceFormatter: InteriorWhitespaceFormatter;
 
     beforeEach(() => {
@@ -40,90 +40,6 @@ describe('insertSpaceAroundParameterAssignment', () => {
         expect(format(input)).to.equal(expected);
     });
 
-    it('formats empty objects in function parameters correctly with explicit option false', () => {
-        const input = undent`
-            sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions={} as object)
-                print "hello"
-            end sub
-        `;
-        const expected = undent`
-            sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions = {} as object)
-                print "hello"
-            end sub
-        `;
-        expect(format(input, { insertSpaceBetweenEmptyCurlyBraces: false })).to.equal(expected);
-    });
-
-    it('formats empty objects in function parameters correctly with explicit option true', () => {
-        const input = undent`
-            sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions={} as object)
-                print "hello"
-            end sub
-        `;
-        const expected = undent`
-            sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions = { } as object)
-                print "hello"
-            end sub
-        `;
-        expect(format(input, { insertSpaceBetweenEmptyCurlyBraces: true })).to.equal(expected);
-    });
-
-    it('formats empty objects in function parameters correctly with insertSpaceAroundParameterAssignment: false', () => {
-        const input = undent`
-            sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions   =   {} as object)
-                print "hello"
-            end sub
-        `;
-        const expected = undent`
-            sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions={} as object)
-                print "hello"
-            end sub
-        `;
-        expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
-    });
-
-    it('handles nested parentheses in function parameters correctly', () => {
-        const input = undent`
-            sub foo(a = (1 + 2), b = 3)
-                print "hello"
-            end sub
-        `;
-        const expected = undent`
-            sub foo(a=(1 + 2), b=3)
-                print "hello"
-            end sub
-        `;
-        expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
-    });
-
-    it('handles simple assignments in function parameters correctly', () => {
-        const input = undent`
-            sub foo(a = 1, b = 3)
-                print "hello"
-            end sub
-        `;
-        const expected = undent`
-            sub foo(a=1, b=3)
-                print "hello"
-            end sub
-        `;
-        expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
-    });
-
-    it('handles optional chaining in default parameter values', () => {
-        const input = undent`
-            sub foo(a = m?.call?())
-                print "hello"
-            end sub
-        `;
-        const expected = undent`
-            sub foo(a=m?.call?())
-                print "hello"
-            end sub
-        `;
-        expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
-    });
-
     it('handles AA literal with key and colon on same line', () => {
         const input = undent`
                 sub main()
@@ -142,24 +58,6 @@ describe('insertSpaceAroundParameterAssignment', () => {
                 end sub
             `;
         expect(format(input)).to.equal(input);
-    });
-
-    it('handles anonymous function with insertSpaceAroundParameterAssignment: false', () => {
-        const input = undent`
-                sub main()
-                    a = sub(a=1)
-                    end sub
-                end sub
-            `;
-        expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(input);
-    });
-
-    it('handles parameter assignment without spaces with insertSpaceAroundParameterAssignment: false', () => {
-        const input = undent`
-                sub main(a=1)
-                end sub
-            `;
-        expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(input);
     });
 
     it('handles sub with invalid next token', () => {
@@ -255,5 +153,209 @@ describe('insertSpaceAroundParameterAssignment', () => {
     it('handles sub main =', () => {
         const input = 'sub main =';
         expect(format(input)).to.equal(input);
+    });
+
+    describe('insertSpaceBetweenEmptyCurlyBraces', () => {
+        it('formats empty objects in function parameters correctly with explicit option false', () => {
+            const input = undent`
+                sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions={} as object)
+                    print "hello"
+                end sub
+            `;
+            const expected = undent`
+                sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions = {} as object)
+                    print "hello"
+                end sub
+            `;
+            expect(format(input, { insertSpaceBetweenEmptyCurlyBraces: false })).to.equal(expected);
+        });
+
+        it('formats empty objects in function parameters correctly with explicit option true', () => {
+            const input = undent`
+                sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions={} as object)
+                    print "hello"
+                end sub
+            `;
+            const expected = undent`
+                sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions = { } as object)
+                    print "hello"
+                end sub
+            `;
+            expect(format(input, { insertSpaceBetweenEmptyCurlyBraces: true })).to.equal(expected);
+        });
+    });
+
+    describe('insertSpaceAroundParameterAssignment()', () => {
+        it('handles anonymous function with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    sub main()
+                        a = sub(a=1)
+                        end sub
+                    end sub
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(input);
+        });
+
+        it('handles parameter assignment without spaces with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    sub main(a=1)
+                    end sub
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(input);
+        });
+
+        it('adds spaces around parameter assignment when insertSpaceAroundParameterAssignment is true (default)', () => {
+            const input = undent`
+                    sub main(a=1)
+                    end sub
+                `;
+            const expected = undent`
+                    sub main(a = 1)
+                    end sub
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: true })).to.equal(expected);
+        });
+
+        it('handles function parameter assignment without spaces with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    function main(a    =    1)
+                    end function
+                `;
+            const expected = undent`
+                    function main(a=1)
+                    end function
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles function with no default values having insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    function longInteger(a as boolean)
+                    end function
+                `;
+            const expected = undent`
+                    function longInteger(a as boolean)
+                    end function
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles function parameter assignment with spaces with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    function longInteger(a    =    1,   b    =    2)
+                    end function
+                `;
+            const expected = undent`
+                    function longInteger(a=1, b=2)
+                    end function
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles anonymous function parameter assignment without spaces with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    a = function(a   =     1)
+                    end function
+                `;
+            const expected = undent`
+                    a = function(a=1)
+                    end function
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles complex assignment without spaces with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                    sub init()
+                        uiResolution = {};
+
+                        m.global.AddFields({
+                            "mainInit": false,
+                            "exitChannel": false,
+                            "hasExitedChannel": false,
+
+                            ' UI resolution fields.
+                            "uiResolution": uiResolution,
+                            "isFHD": (uiResolution.name = "FHD"),
+                            "isHD": (uiResolution.name = "HD"),
+                            "isSD": (uiResolution.name = "SD"),
+                        })
+                    end sub
+                `;
+            const expected = undent`
+                    sub init()
+                        uiResolution = {};
+
+                        m.global.AddFields({
+                            "mainInit": false,
+                            "exitChannel": false,
+                            "hasExitedChannel": false,
+
+                            ' UI resolution fields.
+                            "uiResolution": uiResolution,
+                            "isFHD": (uiResolution.name = "FHD"),
+                            "isHD": (uiResolution.name = "HD"),
+                            "isSD": (uiResolution.name = "SD"),
+                        })
+                    end sub
+                `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('formats empty objects in function parameters correctly with insertSpaceAroundParameterAssignment: false', () => {
+            const input = undent`
+                sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions   =   {} as object)
+                    print "hello"
+                end sub
+            `;
+            const expected = undent`
+                sub PlaybackSession_MakeDecisionAndSetContent(decisionOptions={} as object)
+                    print "hello"
+                end sub
+            `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles nested parentheses in function parameters correctly', () => {
+            const input = undent`
+                sub foo(a = (1 + 2), b = 3)
+                    print "hello"
+                end sub
+            `;
+            const expected = undent`
+                sub foo(a=(1 + 2), b=3)
+                    print "hello"
+                end sub
+            `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles simple assignments in function parameters correctly', () => {
+            const input = undent`
+                sub foo(a = 1, b = 3)
+                    print "hello"
+                end sub
+            `;
+            const expected = undent`
+                sub foo(a=1, b=3)
+                    print "hello"
+                end sub
+            `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
+
+        it('handles optional chaining in default parameter values', () => {
+            const input = undent`
+                sub foo(a = m?.call?())
+                    print "hello"
+                end sub
+            `;
+            const expected = undent`
+                sub foo(a=m?.call?())
+                    print "hello"
+                end sub
+            `;
+            expect(format(input, { insertSpaceAroundParameterAssignment: false })).to.equal(expected);
+        });
     });
 });
