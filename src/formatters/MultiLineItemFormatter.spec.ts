@@ -1,6 +1,7 @@
 
 import { expect } from 'chai';
 import { Formatter } from '../Formatter';
+import { undent } from 'undent';
 
 describe('MultiLineItemFormatter', () => {
     let formatter: Formatter;
@@ -24,6 +25,22 @@ describe('MultiLineItemFormatter', () => {
     it('preserves return object starting on same line but multiline', () => {
         const input = `sub foo()\n    return { a: 1,\n        b: 2\n    }\nend sub`;
         const expected = `sub foo()\n    return { a: 1,\n        b: 2\n    }\nend sub`;
+        expect(formatter.format(input).trim()).to.equal(expected.trim());
+    });
+
+    it('preserves multiple open/close pairs that are unbalanced', () => {
+        const input = undent`
+            m.callback.Invoke([m, {
+                "event": event,
+                "data": data,
+            }])
+        `;
+        const expected = undent`
+            m.callback.Invoke([m, {
+                "event": event,
+                "data": data,
+            }])
+        `;
         expect(formatter.format(input).trim()).to.equal(expected.trim());
     });
 });
