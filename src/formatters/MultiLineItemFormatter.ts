@@ -33,7 +33,9 @@ export class MultiLineItemFormatter {
                 //is NOT array like `[[ ...\n ]]`, or `[{ ...\n }]`)
                 !this.isMatchingDoubleArrayOrArrayCurly(tokens, i) &&
                 //Don't reformat if the opening bracket or curly is on the same line as 'return'
-                !this.isReturnArrayOrCurlyOnSameLine(tokens, i)
+                !this.isReturnArrayOrCurlyOnSameLine(tokens, i) &&
+                //Don't reformat if there are multiple open/close pairs that are unbalanced
+                !this.isMultiUnbalancedOpenClosePair(tokens, i)
             ) {
                 tokens.splice(i + 1, 0, {
                     kind: TokenKind.Newline,
@@ -77,6 +79,38 @@ export class MultiLineItemFormatter {
             }
         }
         return false;
+    }
+
+    /**
+     * Detects when a line has both unbalanced square brackets and curly braces,
+     * which indicates a pattern like `[m, {` that should not be reformatted.
+     * Scans tokens from the given index until a newline is found.
+     * @param tokens The array of tokens to scan.
+     * @param currentIndex The index to start scanning from.
+     * @returns {boolean} True if both curly and square brackets are unbalanced before a newline; otherwise, false.
+     */
+    public isMultiUnbalancedOpenClosePair(tokens: Token[], currentIndex: number) {
+        let curlyOpenCount = 0;
+        let squareOpenCount = 0;
+
+        for (let i = currentIndex; i < tokens.length; i++) {
+            let token = tokens[i];
+            if (token.kind === TokenKind.Newline) {
+                break;
+            }
+
+            if (token.kind === TokenKind.LeftCurlyBrace) {
+                curlyOpenCount++;
+            } else if (token.kind === TokenKind.RightCurlyBrace) {
+                curlyOpenCount--;
+            } else if (token.kind === TokenKind.LeftSquareBracket) {
+                squareOpenCount++;
+            } else if (token.kind === TokenKind.RightSquareBracket) {
+                squareOpenCount--;
+            }
+        }
+
+        return curlyOpenCount > 0 && squareOpenCount > 0;
     }
 
     public isMatchingDoubleArrayOrArrayCurly(tokens: Token[], currentIndex: number) {
