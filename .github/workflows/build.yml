@@ -5,6 +5,14 @@ on:
       - master
   pull_request:
 
+concurrency:
+  # We use the pull request number to ensure that each PR has a unique concurrency group. This prevents different PRs from interfering
+  # with each other, especially when multiple PRs originate from the same branch. If the pull request number is not available, we fall
+  # back to using the branch name (`github.head_ref`) or the full reference (`github.ref`), ensuring uniqueness.
+  #
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
     runs-on: ${{ matrix.os }}
