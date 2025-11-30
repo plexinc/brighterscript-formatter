@@ -128,11 +128,11 @@ export class MultiLineItemFormatter {
             let closingToken = util.getClosingToken(tokens, currentIndex, TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
             //look at the previous token
             let previous = closingToken && util.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closingToken), true);
-            /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
             if (previous && (previous.kind === TokenKind.RightSquareBracket || previous.kind === TokenKind.RightCurlyBrace)) {
                 return true;
             }
         }
+        return false;
     }
 
     /**
