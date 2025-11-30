@@ -16,6 +16,27 @@ describe('MultiLineItemFormatter', () => {
         expect(formatter.format(inputSameLine).trim()).to.equal(expectedSameLine.trim());
     });
 
+    it('preserves isMatchingDoubleArrayOrArrayCurly [[ .. ]]', () => {
+        const input = undent`
+        [[1, 2, 3]
+        ]`;
+        const expected = undent`
+        [
+            [1, 2, 3]
+        ]`;
+        expect(formatter.format(input).trim()).to.equal(expected.trim());
+    });
+    it('preserves isMatchingDoubleArrayOrArrayCurly [{ .. }]', () => {
+        const input = undent`
+        [{1, 2, 3}
+        ]`;
+        const expected = undent`
+        [
+            { 1, 2, 3 }
+        ]`;
+        expect(formatter.format(input).trim()).to.equal(expected.trim());
+    });
+
     it('preserves return object on same line (multi-line content)', () => {
         const input = `sub foo()\n    return {\n        a: 1\n    }\nend sub`;
         const expected = `sub foo()\n    return {\n        a: 1\n    }\nend sub`;
