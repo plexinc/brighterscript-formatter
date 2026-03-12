@@ -10,7 +10,8 @@
         "strict": true,
         "strictNullChecks": true,
         "noUnusedLocals": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": ["chai", "mocha", "node", "sinon"]
     },
     "include": [
         "src/**/*.ts"
