@@ -13,7 +13,9 @@
         "skipLibCheck": true,
         "types": [
             "mocha",
-            "chai"
+            "chai",
+            "node",
+            "sinon"
         ]
     },
     "include": [
