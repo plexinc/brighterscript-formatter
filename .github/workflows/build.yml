@@ -27,5 +27,10 @@ jobs:
         with:
           node-version: "22"
           architecture: 'x64' # fix for macos-latest
-      - run: npm ci
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@plexinc'
+      - name: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm ci
       - run: npm run preversion
