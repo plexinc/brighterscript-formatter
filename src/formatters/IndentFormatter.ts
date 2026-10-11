@@ -546,7 +546,23 @@ export class IndentFormatter {
                 //is not a symbol and is not being used as a key in an AA literal
                 (
                     !isSymbol &&
-                    nextNonWhitespaceToken.kind !== TokenKind.Colon
+                    (
+                        nextNonWhitespaceToken.kind !== TokenKind.Colon ||
+                        //allow these tokens to be followed by a colon (because they are valid statement separators)
+                        [
+                            TokenKind.EndIf,
+                            TokenKind.EndFor,
+                            TokenKind.EndWhile,
+                            TokenKind.EndSub,
+                            TokenKind.EndFunction,
+                            TokenKind.EndTry,
+                            TokenKind.EndClass,
+                            TokenKind.EndNamespace,
+                            TokenKind.Next,
+                            TokenKind.EndInterface,
+                            TokenKind.EndEnum
+                        ].includes(token.kind)
+                    )
                 )
             ) &&
             //is not a method call
