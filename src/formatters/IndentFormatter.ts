@@ -551,8 +551,9 @@ export class IndentFormatter {
             ) &&
             //is not a method call
             !(
-                //certain symbols may appear next to an open paren, so exclude those
-                ![TokenKind.RightSquareBracket].includes(token.kind) &&
+                //certain symbols may appear next to an open paren, so exclude those. A `)` followed by `(` calls the
+                //function a call returned (e.g. `getHandler(x)(y)`), and still closes its own group
+                ![TokenKind.RightSquareBracket, TokenKind.RightParen].includes(token.kind) &&
                 //open paren means method call
                 nextNonWhitespaceToken.kind === TokenKind.LeftParen
             )
