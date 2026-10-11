@@ -77,10 +77,17 @@ export class Util {
      * Find the matching closing token for open square or open curly
      */
     public getClosingToken(tokens: Token[], currentIndex: number, openKind: TokenKind, closeKind: TokenKind) {
+        //`?(` and `?[` are closed by the same `)` and `]` as `(` and `[`, so count either form as an opener
+        let openKinds = [openKind];
+        if (closeKind === TokenKind.RightParen) {
+            openKinds = [TokenKind.LeftParen, TokenKind.QuestionLeftParen];
+        } else if (closeKind === TokenKind.RightSquareBracket) {
+            openKinds = [TokenKind.LeftSquareBracket, TokenKind.QuestionLeftSquare];
+        }
         let openCount = 0;
         for (let i = currentIndex; i < tokens.length; i++) {
             let token = tokens[i];
-            if (token.kind === openKind) {
+            if (openKinds.includes(token.kind)) {
                 openCount++;
             } else if (token.kind === closeKind) {
                 openCount--;
